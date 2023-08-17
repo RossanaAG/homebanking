@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AccountDTO {
-
     private long id;
     private String number;
     private LocalDate date;
@@ -23,7 +22,6 @@ public class AccountDTO {
                 .stream()
                 .map(TransactionDTO::new)
                 .collect(Collectors.toSet());
-
     }
 
     public long getId() {

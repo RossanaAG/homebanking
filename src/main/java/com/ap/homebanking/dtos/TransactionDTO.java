@@ -1,8 +1,9 @@
 package com.ap.homebanking.dtos;
 
-import com.ap.homebanking.models.*;
-import java.time.LocalDateTime;
+import com.ap.homebanking.models.Transaction;
+import com.ap.homebanking.enums.TransactionType;
 
+import java.time.LocalDateTime;
 public class TransactionDTO {
     private long id;
     private TransactionType type;

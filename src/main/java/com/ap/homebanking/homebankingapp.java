@@ -1,5 +1,8 @@
 package com.ap.homebanking;
 
+import com.ap.homebanking.enums.CardColor;
+import com.ap.homebanking.enums.CardType;
+import com.ap.homebanking.enums.TransactionType;
 import com.ap.homebanking.models.*;
 import com.ap.homebanking.repositories.*;
 import org.springframework.boot.CommandLineRunner;
@@ -24,7 +27,8 @@ public class homebankingapp {
                                       AccountRepository accountRepository,
                                       TransactionRepository transactionRepository,
                                       LoanRepository loanRepository,
-                                      ClientLoanRepository clientLoanRepository) {
+                                      ClientLoanRepository clientLoanRepository,
+                                      CardRepository cardRepository) {
         return (args) -> {
             //Creación de clientes
             Client client1 = new Client("Melba", "Morel","melba@maindhub.com");
@@ -95,6 +99,25 @@ public class homebankingapp {
             clientLoanRepository.save(clientLoan2);
             clientLoanRepository.save(clientLoan3);
             clientLoanRepository.save(clientLoan4);
+
+
+            //Para crear las tarjetas para CLiente, datos a tener en cuenta:
+            //Nombre del Titular, Nro de Tarjeta, Fecha de Inicio de Validez, Fecha de Vencimiento, CVV de 3 dígitos
+            String name1 = client1.getFirstName() + " " + client1.getLastName();
+            Card card1 = new Card(name1, CardType.DEBIT, CardColor.GOLD, "1111-2222-3333-4444", (short)123, LocalDate.now(), LocalDate.now().plusYears(5));
+            Card card2 = new Card(name1, CardType.CREDIT, CardColor.TITANIUM, "9999-8888-7777-6666", (short)456, LocalDate.now(), LocalDate.now().plusYears(5));
+            String name2 = client2.getFirstName() + " " + client2.getLastName();
+            Card card3 = new Card(name2, CardType.CREDIT, CardColor.SILVER, "33551-1030-2022-118", (short)789, LocalDate.now().minusYears(1), LocalDate.now().plusYears(4));
+
+            // Agregamos Tarjeta a Cliente
+            client1.addCard(card1);
+            client1.addCard(card2);
+            client2.addCard(card3);
+
+            // Guardamos Tarjeta en su repositorio
+            cardRepository.save(card1);
+            cardRepository.save(card2);
+            cardRepository.save(card3);
 
 
         };
