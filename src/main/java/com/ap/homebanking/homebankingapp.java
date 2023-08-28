@@ -36,25 +36,28 @@ public class homebankingapp {
             Client client1 = new Client("Melba", "Morel", "melba@mindhub.com", passwordEncoder.encode("123456"));
             Client client2 = new Client("Leo","Messi","leo.messi@mindhub.com", passwordEncoder.encode("18122022"));
 
+            //Creo Administrador
+            Client admin = new Client("Admin", "Arg", "administrador@mindhub.com", passwordEncoder.encode("Admin1234"));
+
             //Se guarda clientes
+            clientRepository.save(admin);
             clientRepository.save(client1);
             clientRepository.save(client2);
 
             // Creación de cuentas
-            Account account1 = new Account("VIN001", LocalDate.now().minusDays(2),5000);
-            Account account2 = new Account("VIN002", LocalDate.now().minusDays(1),7500);
-            Account account3 = new Account("VIN003", LocalDate.now().minusDays(3),8000);
+            Account account1 = new Account("VIN11234567", LocalDate.now().minusDays(2),5000);
+            Account account2 = new Account("VIN77654321", LocalDate.now().minusDays(1),7500);
 
 
             // Agregar cuenta al cliente
             client1.addAccount(account1);
             client1.addAccount(account2);
-            client2.addAccount(account3);
+
 
             // Se guarda cuenta
             accountRepository.save(account1);
             accountRepository.save(account2);
-            accountRepository.save(account3);
+
 
             //Transacciones
             Transaction transaction1 = new Transaction(TransactionType.CREDIT,1700,"Intereses", LocalDateTime.now());

@@ -15,15 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class WebAuthentication extends GlobalAuthenticationConfigurerAdapter {
-
     @Autowired
     ClientRepository clientRepository;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
 
     @Override
     public void init(AuthenticationManagerBuilder auth) throws Exception {
@@ -31,7 +28,7 @@ public class WebAuthentication extends GlobalAuthenticationConfigurerAdapter {
 
             Client client = clientRepository.findByEmail(inputName);
             if (client != null) {
-                if(client.getEmail().equals("melba@mindhub.com")){
+                if(client.getEmail().equals("administrador@mindhub.com")){
                     return new User(client.getEmail(), client.getPassword(),
                             AuthorityUtils.createAuthorityList("ADMIN"));
                 }else{
@@ -44,3 +41,5 @@ public class WebAuthentication extends GlobalAuthenticationConfigurerAdapter {
         });
     }
 }
+
+//Cambio correo por uno exclusivo para el administrador, mejorar la seguridad
