@@ -45,8 +45,8 @@ public class homebankingapp {
             clientRepository.save(client2);
 
             // Creación de cuentas
-            Account account1 = new Account("VIN11234567", LocalDate.now().minusDays(2),5000);
-            Account account2 = new Account("VIN77654321", LocalDate.now().minusDays(1),7500);
+            Account account1 = new Account("VIN-11234567", LocalDate.now().minusDays(2),5000);
+            Account account2 = new Account("VIN-77654321", LocalDate.now().minusDays(1),7500);
 
 
             // Agregar cuenta al cliente

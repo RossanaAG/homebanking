@@ -72,10 +72,10 @@ public class CardController {
             client.addCard(card);
             cardRepository.save(card);
             clientRepository.save(client);
-            return new ResponseEntity<>("Card added to client " + card.getCardHolder(), HttpStatus.CREATED);
+            return new ResponseEntity<>("Client's card has been successfully added " + card.getCardHolder(), HttpStatus.CREATED);
         }
 
-        return new ResponseEntity<>("The maximum number of cards of the same type has been reached", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("We've hit the maximum number of cards of the same type allowed", HttpStatus.FORBIDDEN);
     }
 
 }

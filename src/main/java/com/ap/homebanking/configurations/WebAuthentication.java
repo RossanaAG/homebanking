@@ -42,4 +42,4 @@ public class WebAuthentication extends GlobalAuthenticationConfigurerAdapter {
     }
 }
 
-//Cambio correo por uno exclusivo para el administrador, mejorar la seguridad
+//Cambio correo por uno exclusivo para el administrador

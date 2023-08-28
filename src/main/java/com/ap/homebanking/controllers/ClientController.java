@@ -42,11 +42,9 @@ public class ClientController {
             @RequestParam String email, @RequestParam String password
     )
     {
-
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             return new ResponseEntity<>("Missing data", HttpStatus.FORBIDDEN);
         }
-
         if (clientRepository.findByEmail(email) !=  null) {
             return new ResponseEntity<>("The email is already in use", HttpStatus.FORBIDDEN);
         }

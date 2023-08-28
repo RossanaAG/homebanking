@@ -60,10 +60,10 @@ public class AccountController {
             Account account= new Account(number, LocalDate.now(), 0, client);
 
             accountRepository.save(account);
-            return new ResponseEntity<>("Account added to client " + account.getClient().getEmail() , HttpStatus.CREATED);
+            return new ResponseEntity<>("Client's account has been successfully added " + account.getClient().getEmail() , HttpStatus.CREATED);
 
         }
-        return new ResponseEntity<>("The Maximum Number of Accounts has been reached", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("We've hit the limit for the number of accounts allowed.", HttpStatus.FORBIDDEN);
     }
 
     @GetMapping("clients/current/accounts/{id}")
