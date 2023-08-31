@@ -60,16 +60,26 @@ public class homebankingapp {
 
 
             //Transacciones
-            Transaction transaction1 = new Transaction(TransactionType.CREDIT,1700,"Intereses", LocalDateTime.now());
-            Transaction transaction2 = new Transaction(TransactionType.DEBIT,-2250,"Servicio de Internet", LocalDateTime.now());
+            Transaction transaction1 = new Transaction(TransactionType.CREDIT,17000,"Salario", LocalDateTime.now());
+            Transaction transaction2 = new Transaction(TransactionType.DEBIT,-2000,"Cuota Tarjeta", LocalDateTime.now());
+            Transaction transaction3 = new Transaction(TransactionType.CREDIT,4000,"Venta", LocalDateTime.now());
+            Transaction transaction4 = new Transaction(TransactionType.DEBIT,-1000,"Refacciones", LocalDateTime.now());
+
 
             // Agregando transacciones a la cuenta
             account1.addTransaction(transaction1);
             account1.addTransaction(transaction2);
+            account1.addTransaction(transaction3);
+            account1.addTransaction(transaction4);
 
             //Guardado de Transacciones
             transactionRepository.save(transaction1);
             transactionRepository.save(transaction2);
+            transactionRepository.save(transaction3);
+            transactionRepository.save(transaction4);
+
+
+
 
             // Crear préstamos
             Loan loan1 = new Loan("Hipotecario",500000, List.of(12,24,36,48,60));
