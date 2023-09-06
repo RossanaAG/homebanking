@@ -3,8 +3,8 @@ package com.ap.homebanking.controllers;
 import com.ap.homebanking.dtos.AccountDTO;
 import com.ap.homebanking.models.Account;
 import com.ap.homebanking.models.Client;
-import com.ap.homebanking.repositories.AccountRepository;
-import com.ap.homebanking.repositories.ClientRepository;
+import com.ap.homebanking.services.AccountService;
+import com.ap.homebanking.services.ClientService;
 import com.ap.homebanking.tools.tools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,55 +22,61 @@ import java.util.stream.Collectors;
 public class AccountController {
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
+
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @GetMapping("/accounts")
     public List<AccountDTO> getAccounts(){
-        return accountRepository.findAll().stream().map(AccountDTO::new).collect(Collectors.toList());
+        List<Account> accounts = accountService.findAllAccounts();
+        return accountService.convertToAccountsDTO(accounts);
     }
 
     @GetMapping("/accounts/{id}")
     public AccountDTO getAccount(@PathVariable Long id){
-        Account account = accountRepository.findById(id).orElse(null);
-        if(account != null) return new AccountDTO(account);
-        return null;
+        Account account = accountService.findById(id);
+        return new AccountDTO(account);
     }
 
     @GetMapping("/clients/current/accounts")
     public Set<AccountDTO> getCurrentAccounts(Authentication authentication)
     {
-        Client client = clientRepository.findByEmail(authentication.getName());
+        Client client = clientService.findByEmail(authentication.getName());
         return client.getAccounts()
                 .stream()
                 .map(AccountDTO::new)
                 .collect(Collectors.toSet());
     }
 
-    // Crea una nueva cuenta para el cliente autenticado
     @PostMapping("/clients/current/accounts")
     public ResponseEntity<Object> createAccount(Authentication authentication)
     {
-        Client client = clientRepository.findByEmail(authentication.getName());
+        Client client = clientService.findByEmail(authentication.getName());
 
-        // Crea una nueva cuenta para el cliente si el cliente tiene menos de 3 cuentas
         if (client.getAccounts().size() < 3) {
-            String number = tools.generateAccountNumber(accountRepository.findAll());
+            String number;
+            boolean check;
+            do{
+                number = tools.generateAccountNumber();
+                check = accountService.existsByNumber(number);
+            }while(check);
+
             Account account= new Account(number, LocalDate.now(), 0, client);
 
-            accountRepository.save(account);
-            return new ResponseEntity<>("Client's account has been successfully added " + account.getClient().getEmail() , HttpStatus.CREATED);
+            accountService.saveAccount(account);
+            return new ResponseEntity<>("Account added to client " + account.getClient().getEmail() , HttpStatus.CREATED);
 
         }
-        return new ResponseEntity<>("We've hit the limit for the number of accounts allowed.", HttpStatus.FORBIDDEN);
+
+        return new ResponseEntity<>("The Maximum Number of Accounts has been reached", HttpStatus.FORBIDDEN);
     }
 
     @GetMapping("clients/current/accounts/{id}")
     public AccountDTO getCurrentAccount(Authentication authentication, @PathVariable Long id){
 
-        Client client = clientRepository.findByEmail(authentication.getName());
-        Account account = accountRepository.findById(id).orElse(null);
+        Client client = clientService.findByEmail(authentication.getName());
+        Account account = accountService.findById(id);
         if ((account != null) && (client.getAccounts().contains(account))){
             return new AccountDTO(account);
         }

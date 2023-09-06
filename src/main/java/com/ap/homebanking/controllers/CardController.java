@@ -5,15 +5,14 @@ import com.ap.homebanking.enums.CardColor;
 import com.ap.homebanking.enums.CardType;
 import com.ap.homebanking.models.Card;
 import com.ap.homebanking.models.Client;
-import com.ap.homebanking.repositories.CardRepository;
-import com.ap.homebanking.repositories.ClientRepository;
+import com.ap.homebanking.services.CardService;
+import com.ap.homebanking.services.ClientService;
 import com.ap.homebanking.tools.tools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,30 +24,30 @@ import java.util.stream.Collectors;
 @RequestMapping("api/")
 public class CardController {
     @Autowired
-    private CardRepository cardRepository;
+    private CardService cardService;
+
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @GetMapping("/cards")
     public List<CardDTO> getCards(){
-        return cardRepository.findAll().stream().map(CardDTO::new).collect(Collectors.toList());
+        List<Card> cards = cardService.findAllCards();
+        return cardService.convertToCardDTO(cards);
     }
-
     @GetMapping("/cards/{id}")
     public CardDTO getCard(@PathVariable Long id){
-        return cardRepository.findById(id).map(CardDTO::new).orElse(null);
+        return new CardDTO(cardService.findById(id));
     }
 
     @GetMapping("/clients/current/cards")
     public Set<CardDTO> getCurrentCards(Authentication authentication)
     {
-        Client client = clientRepository.findByEmail(authentication.getName());
+        Client client = clientService.findByEmail(authentication.getName());
         return client.getCards()
                 .stream()
                 .map(CardDTO::new)
                 .collect(Collectors.toSet());
     }
-
     @PostMapping("/clients/current/cards")
     public ResponseEntity<Object> createCard(
             Authentication authentication,
@@ -56,26 +55,45 @@ public class CardController {
             @RequestParam CardType cardType
     )
     {
-        Client client = clientRepository.findByEmail(authentication.getName());
-        int creditCardsCount = 0, debitCardsCount = 0;
+        Client client = clientService.findByEmail(authentication.getName());
 
-        for(Card card:client.getCards()){
-            if(card.getType().equals(CardType.CREDIT)) creditCardsCount++;
-            else debitCardsCount++;
+        Long creditCardsCount = cardService.countByClientAndType(client, CardType.CREDIT);
+        Long debitCardsCount = cardService.countByClientAndType(client, CardType.DEBIT);
+
+        if (cardType == CardType.CREDIT && creditCardsCount >= 3) {
+            return new ResponseEntity<>("We've hit the maximum number of cards of the same type allowed", HttpStatus.FORBIDDEN);
         }
 
-        if ((cardType == CardType.CREDIT && creditCardsCount < 3) || (cardType == CardType.DEBIT && debitCardsCount < 3)){
-            String cardHolder = client.getFirstName() + " " + client.getLastName();
-            String number = tools.generateCardNumber(cardRepository.findAll());
-            short cvv = (short)(100 + Math.random() * 899);
-            Card card = new Card(cardHolder, cardType, cardColor, number, cvv, LocalDate.now(),LocalDate.now().plusYears(5));
-            client.addCard(card);
-            cardRepository.save(card);
-            clientRepository.save(client);
-            return new ResponseEntity<>("Client's card has been successfully added " + card.getCardHolder(), HttpStatus.CREATED);
+        if (cardType == CardType.DEBIT && debitCardsCount >= 3) {
+            return new ResponseEntity<>("We've hit the maximum number of cards of the same type allowed", HttpStatus.FORBIDDEN);
         }
 
-        return new ResponseEntity<>("We've hit the maximum number of cards of the same type allowed", HttpStatus.FORBIDDEN);
+        if (cardService.existsByClientAndTypeAndColor(client,cardType,cardColor)){
+            String message = "A card with this color status currently exist for ";
+            if (cardType == CardType.DEBIT) message += "Debit Cards";
+            if (cardType == CardType.CREDIT) message += "Credit Cards";
+            return new ResponseEntity<>(message, HttpStatus.FORBIDDEN);
+        }
+
+        String cardHolder = client.getFirstName() + " " + client.getLastName();
+        String number;
+        boolean check;
+        do{
+            number = tools.generateCardNumber();
+            check = cardService.existsByNumber(number);
+        } while(check);
+
+        short cvv = (short)(100 + Math.random() * 899);
+        Card card = new Card(cardHolder, cardType, cardColor, number, cvv, LocalDate.now(),LocalDate.now().plusYears(5));
+        client.addCard(card);
+        cardService.saveCard(card);
+        clientService.saveClient(client);
+
+        return new ResponseEntity<>("Client's card has been successfully added " + card.getCardHolder(), HttpStatus.CREATED);
     }
 
 }
+
+
+
+

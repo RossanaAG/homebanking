@@ -1,10 +1,11 @@
 package com.ap.homebanking.controllers;
 
 import com.ap.homebanking.dtos.ClientDTO;
+
 import com.ap.homebanking.models.Account;
 import com.ap.homebanking.models.Client;
-import com.ap.homebanking.repositories.AccountRepository;
-import com.ap.homebanking.repositories.ClientRepository;
+import com.ap.homebanking.services.AccountService;
+import com.ap.homebanking.services.ClientService;
 import com.ap.homebanking.tools.tools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -23,17 +23,19 @@ import java.util.stream.Collectors;
 public class ClientController {
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @GetMapping("/clients")
     public List<ClientDTO> getClients(){
-        return clientRepository.findAll().stream().map(ClientDTO::new).collect(Collectors.toList());
+        List<Client> clients = clientService.findAllClients();
+        return clientService.convertToClientsDTO(clients);
+
     }
 
     @PostMapping("/clients")
@@ -42,30 +44,54 @@ public class ClientController {
             @RequestParam String email, @RequestParam String password
     )
     {
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            return new ResponseEntity<>("Missing data", HttpStatus.FORBIDDEN);
+
+        if (firstName.isBlank()) {
+            return new ResponseEntity<>("First name is blank", HttpStatus.FORBIDDEN);
         }
-        if (clientRepository.findByEmail(email) !=  null) {
+
+        if (lastName.isBlank()) {
+            return new ResponseEntity<>("Last name is blank", HttpStatus.FORBIDDEN);
+        }
+        if (email.isBlank()){
+            return new ResponseEntity<>("Email is blank", HttpStatus.FORBIDDEN);
+        }
+
+        if (!tools.isValidEmail(email)){
+            return new ResponseEntity<>("Email does not valid", HttpStatus.FORBIDDEN);
+        }
+
+        if (password.isBlank()) {
+            return new ResponseEntity<>("Password is blank", HttpStatus.FORBIDDEN);
+        }
+
+        if (clientService.findByEmail(email) !=  null) {
             return new ResponseEntity<>("The email is already in use", HttpStatus.FORBIDDEN);
         }
 
         Client client = new Client(firstName, lastName, email, passwordEncoder.encode(password));
-        Account account = new Account("", LocalDate.now(),0);
-        account.setNumber(tools.generateAccountNumber(accountRepository.findAll()));
-        accountRepository.save(account);
+        String number;
+        boolean check;
+        do{
+            number = tools.generateAccountNumber();
+            check = accountService.existsByNumber(number);
+        }while(check);
+
+        Account account = new Account(number, LocalDate.now(),0);
+
+        accountService.saveAccount(account);
         client.addAccount(account);
-        clientRepository.save(client);
+        clientService.saveClient(client);
 
         return new ResponseEntity<>("Client " + client.getEmail() + " was created",HttpStatus.CREATED);
     }
 
     @GetMapping("/clients/{id}")
     public ClientDTO getClient(@PathVariable Long id){
-        return clientRepository.findById(id).map(ClientDTO::new).orElse(null);
+        return new ClientDTO(clientService.findById(id));
     }
 
     @GetMapping("/clients/current")
     public ClientDTO getCurrentClient(Authentication authentication){
-        return new ClientDTO(clientRepository.findByEmail(authentication.getName()));
+        return new ClientDTO(clientService.findByEmail(authentication.getName()));
     }
 }

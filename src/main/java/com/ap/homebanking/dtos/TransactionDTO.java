@@ -19,18 +19,22 @@ public class TransactionDTO {
     }
 
     public long getId() {
+
         return id;
     }
     public TransactionType getType() {
+
         return type;
     }
     public double getAmount() {
+
         return amount;
     }
     public String getDescription() {
         return description;
     }
     public LocalDateTime getDate() {
+
         return date;
     }
 }

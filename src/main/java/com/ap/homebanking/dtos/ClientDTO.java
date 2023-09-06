@@ -34,24 +34,31 @@ public class ClientDTO {
     }
 
     public long getId() {
+
         return id;
     }
     public String getFirstName() {
+
         return firstName;
     }
     public String getLastName() {
+
         return lastName;
     }
     public String getEmail() {
+
         return email;
     }
     public Set<AccountDTO> getAccounts() {
+
         return accounts;
     }
     public List<ClientLoanDTO> getLoans() {
+
         return loans;
     }
     public List<CardDTO> getCards() {
+
         return cards;
     }
 }

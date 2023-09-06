@@ -25,21 +25,26 @@ public class AccountDTO {
     }
 
     public long getId() {
+
         return id;
     }
 
     public String getNumber() {
+
         return number;
     }
 
     public LocalDate getDate() {
+
         return date;
     }
 
     public double getBalance() {
+
         return balance;
     }
     public Set<TransactionDTO> getTransactions() {
+
         return transactions;
     }
 }

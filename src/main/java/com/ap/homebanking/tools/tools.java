@@ -1,16 +1,45 @@
 package com.ap.homebanking.tools;
 
-import com.ap.homebanking.models.Account;
-import com.ap.homebanking.models.Card;
-import com.ap.homebanking.repositories.AccountRepository;
-import com.ap.homebanking.repositories.CardRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class tools {
+
+    static public String generateAccountNumber()
+    {
+        // Se crea un número de cuenta aleatorio en formato "VIN-XXXXXXXX"
+        return "VIN-" + String.format("%08d", 11111111 + (int)(Math.random() * 88888888));
+    }
+
+    static public String generateCardNumber()
+    {
+        String[] cardNumber = new String[4];
+        StringBuilder number = new StringBuilder();
+        for(int i=0;i<4;i++){
+            // Se generan cuatro partes del número de tarjeta, cada una con cuatro dígitos
+            cardNumber[i] = String.format("%04d", 1000 + (int)(Math.random() * 8999));
+            number.append(cardNumber[i]);
+            if (i<=2) number.append("-");
+        }
+        return number.toString();
+    }
+
+    static private final  Pattern EMAIL_PATTERN = Pattern.compile(
+            //Verifica direcciones de correo electrónico válidas (nota oara mi: ver apuntes)
+            "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-]{2,6}$"
+    );
+
+    public static boolean isValidEmail(String email) {
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
+        return matcher.matches();
+    }
+
+}
+
+/*
+public class tools {
     //Genera un número de cuenta aleatorio que no existe en la lista de cuentas
-    static public String generateAccountNumber(List<Account> accounts)
+   static public String generateAccountNumber(List<Account> accounts)
     {
         String number;
         boolean check;
@@ -60,4 +89,4 @@ public class tools {
 
         return number;
     }
-}
+}*/

@@ -32,24 +32,31 @@ public class CardDTO {
         return id;
     }
     public String getCardHolder() {
+
         return cardHolder;
     }
     public CardType getType() {
+
         return type;
     }
     public CardColor getColor() {
+
         return color;
     }
     public String getNumber() {
+
         return number;
     }
     public short getCvv() {
+
         return cvv;
     }
     public LocalDate getFromDate() {
+
         return fromDate;
     }
     public LocalDate getThruDate() {
+
         return thruDate;
     }
 }
